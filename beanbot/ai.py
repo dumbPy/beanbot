@@ -1,3 +1,4 @@
+import os
 import openai
 import logging
 import datetime
@@ -55,7 +56,7 @@ def generate_transactions(userMessage:str, accounts:str) -> [str]:
             }
         ],
         model="gpt-3.5-turbo-1106",
-        temperature=0.1,
+        temperature=round(float(os.environ.get('TEMPERATURE', 0.1)), 2),
         stop=["```"],
         n=3
     )
