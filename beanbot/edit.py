@@ -1,15 +1,17 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ConversationHandler
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler
-from .utils import format_transaction
+from .utils import format_transaction, logger, handle_state_error
 from .storage import MongoDBWrapper
 
 EDIT, DELETE = range(2)
+
 
 class TransactionEditor:
     def __init__(self, storage:MongoDBWrapper):
         self.storage = storage
 
+    @handle_state_error
     async def edit_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         arg = context.args
         if arg:
@@ -46,6 +48,7 @@ class TransactionEditor:
         reply_markup = InlineKeyboardMarkup(keyboard)
         return reply_markup
 
+    @handle_state_error
     async def handle_edit_buttons(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         query = update.callback_query
         await query.answer()
@@ -57,6 +60,9 @@ class TransactionEditor:
             # Fetch the previous transaction and update the message
             if cursor == 0:
                 message = format_transaction(current_transaction)+"\nNo previous transaction"
+                if message == query.message.text_markdown_v2:
+                    await query.answer('No previous candidate')
+                    return EDIT
             else:
                 context.user_data['index'] -= 1
                 cursor = context.user_data['index']
@@ -66,6 +72,9 @@ class TransactionEditor:
             # Fetch the next transaction and update the message
             if cursor == len(context.user_data['transactions']) - 1:
                 message = format_transaction(current_transaction)+"\nNo next transaction"
+                if message == query.message.text_markdown_v2:
+                    await query.answer('No next candidate')
+                    return EDIT
             else:
                 context.user_data['index'] += 1
                 cursor = context.user_data['index']
@@ -89,6 +98,7 @@ class TransactionEditor:
             await query.edit_message_text(message, reply_markup=self.get_delete_confirmation_buttons(), parse_mode='MarkdownV2')
             return DELETE
 
+    @handle_state_error
     async def handle_delete_confirmation(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         # Delete the transaction and update the message
         query = update.callback_query
@@ -102,7 +112,7 @@ class TransactionEditor:
             if cursor == len(context.user_data['transactions']):
                 context.user_data['index'] -= 1
             transaction = context.user_data['transactions'][cursor]
-            next_message = "Deleted...\nNext Transaction:\n"+format_transaction(transaction)
+            next_message = "Deleted\nNext Transaction:\n"+format_transaction(transaction)
         else:
             next_message = format_transaction(transaction)
         await query.edit_message_text(next_message, reply_markup=self.get_edit_buttons(), parse_mode='MarkdownV2')

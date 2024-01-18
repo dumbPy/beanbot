@@ -42,3 +42,8 @@ class MongoDBWrapper:
     def length(self):
         self.collection.find().next()
         return len(self.collection.count_documents({}))
+
+    def get_accounts(self):
+        # TODO: implement this in db
+        with open('accounts.beancount', 'r') as f:
+            return f.read()

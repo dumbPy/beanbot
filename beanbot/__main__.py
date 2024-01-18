@@ -2,37 +2,19 @@ import os
 import logging
 import traceback
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler
-from telegram.ext import filters
+from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
 from textwrap import dedent
-from .ai import generate_transaction
+# from .ai import generate_transaction
 from .storage import MongoDBWrapper
 from .edit import TransactionEditor
+from .generate import TransactionGenerator
+from .utils import handle_error
 import dotenv
 
 dotenv.load_dotenv()
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
-
-
 storage = MongoDBWrapper()
 
-def handle_error(func):
-        async def wrapper(*args, **kwargs):
-            try:
-                return await func(*args, **kwargs)
-            except Exception as e:
-                update = args[0]  # Assuming the first argument is the `update` object
-                await update.message.reply_text(f"An error occurred: {str(e)}")
-                logger.error(traceback.format_exc())
-        return wrapper
 
 @handle_error
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -58,40 +40,6 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             transactions.
 
         """))
-
-@handle_error
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle a message from the user"""
-    keyboard = [
-        [
-            InlineKeyboardButton("Accept", callback_data='acceptTransaction'),
-            InlineKeyboardButton("Reject", callback_data='rejectTransaction'),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    with open('accounts.beancount', 'r') as f:
-        accounts = f.read()
-    message = update.message if update.message is not None else update.edited_message
-    transaction = generate_transaction(message.text, accounts)
-
-    await message.reply_text(f"```beancount\n{transaction}\n```", parse_mode='markdownV2', reply_markup=reply_markup)
-
-
-@handle_error
-async def handle_transaction_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Parses the CallbackQuery and updates the message text."""
-    query = update.callback_query
-
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    await query.answer()
-    
-    if query.data == 'acceptTransaction':
-        storage.append(query.message.text)
-        await query.edit_message_text(text=f"```beancount\n{query.message.text}\n```\nTransaction Added", parse_mode='markdownV2')
-    else:
-        await query.edit_message_text(text=f"```beancount\n{query.message.text}\n```\nSkipped", parse_mode='markdownV2')
-
 
 @handle_error
 async def download_transactions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -159,14 +107,13 @@ def main() -> None:
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("download", download_transactions))
     application.add_handler(CommandHandler("cat", cat))
-    # handle messages from the user that are not commands
-    application.add_handler(MessageHandler(filters.User(username=os.environ['TELEGRAM_USERNAME']) & filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(CallbackQueryHandler(handle_transaction_confirmation, pattern='acceptTransaction|rejectTransaction'))
 
     application.add_handler(CommandHandler("archive", confirm_clear_transactions))
     application.add_handler(CallbackQueryHandler(handle_clear_confirmation, pattern='acceptClear|rejectClear'))
     transactionEditor = TransactionEditor(storage)
+    transactionGenerator = TransactionGenerator(storage)
     application.add_handler(transactionEditor.get_handler())
+    application.add_handler(transactionGenerator.get_handler())
         
     # Run the bot until the user presses Ctrl-C
     application.run_polling(allowed_updates=Update.ALL_TYPES)
