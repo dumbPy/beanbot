@@ -1,0 +1,94 @@
+option "operating_currency" "INR"
+
+* Salary Accounts
+2023-02-15 open Income:IndiaInc
+2020-01-15 open Income:Stocks:Dividend
+2020-01-15 open Income:Stocks:STCG
+2020-01-15 open Income:Stocks:LTCG
+2020-01-15 open Income:MutualFunds:Dividend
+2020-01-15 open Income:MutualFunds:STCG
+2020-01-15 open Income:MutualFunds:LTCG
+2020-01-15 open Income:Interest
+
+
+# Cash Accounts
+1994-06-30 open Assets:Cash
+1994-06-30 open Assets:Wallet:Groww
+1994-06-30 open Assets:UpiLite
+
+* Bank Accounts
+1994-06-30 open Assets:Saving:SBI
+2020-03-30 open Assets:FD:SBI
+1994-06-01 open Assets:Saving:HSBC
+1994-06-01 open Assets:Saving:ICICI
+
+* Credit Cards
+1994-06-30 open Liabilities:CreditCard:HDFC:DCB
+1994-06-30 open Liabilities:CreditCard:ICICI:Amazon
+
+* Personal Liabilities
+2024-01-01 open Liabilities:Personal:JohnDoe
+1994-06-30 open Liabilities:Personal:Dennis
+1980-05-12 open Liabilities:Personal:Others ; When doing transactions for someone else
+
+* Equity Accounts
+1980-05-12 open Equity:Opening-Balances
+
+* Expense Accounts
+1980-05-12 open Expenses:Shopping
+1980-05-12 open Expenses:Gifts
+1980-05-12 open Expenses:Restaurant
+1980-05-12 open Expenses:Groceries
+1980-05-12 open Expenses:FoodOrder
+1980-05-12 open Expenses:Rent
+2022-01-01 open Expenses:Internet
+1980-05-12 open Expenses:Entertainment
+1980-05-12 open Expenses:Travel
+1980-05-12 open Expenses:Travel:Air
+1980-05-12 open Expenses:Travel:Train
+1980-05-12 open Expenses:Travel:Bus
+1980-05-12 open Expenses:Travel:Cab
+1980-05-12 open Expenses:Subscriptions
+1980-05-12 open Expenses:Healthcare
+1980-05-12 open Expenses:Misc
+1980-05-12 open Expenses:Computing
+1980-05-12 open Expenses:Tax:IncomeTax
+1980-05-12 open Expenses:Tax:GST
+
+
+
+* Opening-Balances
+** Cash
+2024-01-14 pad Assets:Cash Equity:Opening-Balances
+2024-01-15 balance Assets:Cash  7500 INR
+2024-01-14 pad Assets:Wallet:Groww Equity:Opening-Balances
+2024-01-15 balance Assets:Wallet:Groww       1229.45 INR
+2024-01-14 pad Assets:UpiLite Equity:Opening-Balances
+2024-01-15 balance Assets:UpiLite  1848 INR
+** Savings
+2024-01-14 pad Assets:Saving:SBI Equity:Opening-Balances
+2024-01-15 balance Assets:Saving:SBI 29,104.90 INR
+2024-01-14 pad Assets:Saving:ICICI Equity:Opening-Balances
+2024-01-15 balance Assets:Saving:ICICI 7,441.53 INR
+2024-01-14 pad Assets:Saving:HSBC Equity:Opening-Balances
+2024-01-15 balance Assets:Saving:HSBC   46.36 INR
+
+** Credit Cards
+
+2024-01-14 pad Liabilities:CreditCard:HDFC:DCB Equity:Opening-Balances
+2024-01-15 balance Liabilities:CreditCard:HDFC:DCB  -99,228.65 INR
+2024-01-14 pad Liabilities:CreditCard:ICICI:Amazon Equity:Opening-Balances
+2024-01-15 balance Liabilities:CreditCard:ICICI:Amazon  -28027.32 INR
+
+** Personal Liabilities
+; These are loans given or taken from friends and family. +ve means I have given loan, i.e., they own me, and -ve means I have taken loan, i.e., I own them.
+; pad directive is used to create a dummy transaction on a given date so that the balance directive can be satisfied.
+; pad directive uses format <date> pad <account to pad> <account to pad from>
+; account to pad is usually an asset account since we want to track it's balance, and account to pad from is usually an equity account (which is a dummy account) or an expense account
+2024-01-14 pad Liabilities:Personal:JohnDoe Equity:Opening-Balances
+2024-01-15 balance Liabilities:Personal:JohnDoe  80000 INR ; Loan Given to John
+
+2024-01-15 balance Liabilities:Personal:Dennis  30000 INR
+2023-02-07 * "Dennis" "Loan to Dennis"
+    Liabilities:Personal:Dennis  30000 INR
+    Assets:Saving:SBI
