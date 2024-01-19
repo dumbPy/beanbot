@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Set the entry point
-ENTRYPOINT ["python", "-m", "beanbot"]
+CMD ["python", "-m", "beanbot"]
