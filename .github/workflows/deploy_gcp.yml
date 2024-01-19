@@ -1,0 +1,31 @@
+name: Deploy to GCP
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: gcloud auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Setup GCloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '450.0.0'
+          
+      - name: Teardown Existing instance
+        run: |
+          gcloud -q compute instances list | grep beanrunner && gcloud -q compute instances delete beanrunner --zone=us-central1-a  && echo 'Deleted Old Instance' || echo 'No Instance to Delete'
+  
+      # - name: Deploy Fresh Instance
+      #   run: |
+      #     gcloud compute instances create-with-container beanrunner \
+      #       --zone=us-central1-a \
+      #       --container-image=docker.io/dumbpy/beanbot:latest \
+      #       --machine-type=e2-micro \
+      #       --container-env=...
+
+    
