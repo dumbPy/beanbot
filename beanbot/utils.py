@@ -1,6 +1,7 @@
 import logging
 import traceback
 from telegram.ext import ConversationHandler
+from enum import Enum
 
 # Enable logging
 logging.basicConfig(
@@ -16,6 +17,13 @@ def format_transaction(transaction:dict[str,str]|str)->str:
     if isinstance(transaction, str):
         return '```beancount\n{}\n```'.format(transaction)
     return '```beancount\n{}\n```'.format(transaction['content'])
+
+class DataType(Enum):
+    TRANSACTIONS = 'transactions'
+    ARCHIVED = 'archived'
+    ACCOUNTS = 'accounts'
+
+DataTypePattern = r'(?P<dataType>transactions|archived|accounts)'
 
 
 def handle_error(func):
@@ -42,5 +50,7 @@ def handle_state_error(func):
             except:
                 # if the error occurs during first message, reply to the message
                 await update.message.reply_text(f"An error occurred: {str(e)}")
+            finally:
+                logger.error(traceback.format_exc())
             return ConversationHandler.END
     return wrapper

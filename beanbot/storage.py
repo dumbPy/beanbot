@@ -2,6 +2,8 @@ from pymongo import MongoClient
 from pathlib import Path
 import os
 import logging
+from enum import Enum
+from .utils import DataType
 
 logger = logging.getLogger('beanbot.storage')
 
@@ -19,6 +21,7 @@ class MongoDBWrapper:
             logger.info("Collection transactions already exists. Skipping...")
             pass
         self.collection = self.db['transactions']
+        self.accounts_collection = self.db['accounts']
     
     def deserialize(self, data:list[dict[str, str]])->str:
         return ([t["content"] for t in data])
@@ -34,24 +37,34 @@ class MongoDBWrapper:
     def archive_all(self):
         self.collection.update_many({'archived':False}, {'$set': {'archived': True}})
 
-    def read(self, include_archived=False)->list[str]:
-        filter = {} if include_archived else {'archived': False}
-        data = self.deserialize(self.collection.find(filter))
+    def read(self, type:DataType)->list[str]:
+        collection = self.accounts_collection if type == DataType.ACCOUNTS else self.collection
+        match type:
+            case DataType.TRANSACTIONS:
+                filter = {'archived': False}
+            case DataType.ARCHIVED:
+                filter = {'archived': True}
+            case DataType.ACCOUNTS:
+                filter = {}
+        data = self.deserialize(collection.find(filter))
         if not data:
-            return [';; transactions.beancount is empty']
+            return [';; No transactions to show']
         return data
 
-    def as_file(self, include_archived=False)->Path:
-        data = "\n\n".join(self.read(include_archived))
-        with open('/tmp/transactions.beancount', 'w') as f:
-            f.write(data)
-        return Path('/tmp/transactions.beancount')
+    def as_file(self, type:DataType)->Path:
+        data = "\n\n".join(self.read(type))
+        match type:
+            case DataType.TRANSACTIONS:
+                path = Path('/tmp/transactions.beancount')
+            case DataType.ARCHIVED:
+                path = Path('/tmp/archived.beancount')
+            case DataType.ACCOUNTS:
+                path = Path('/tmp/accounts.beancount')
+        path.write_text(data)
+        return path
     
     def length(self):
-        self.collection.find().next()
         return len(self.collection.count_documents({}))
 
-    def get_accounts(self):
-        # TODO: implement this in db
-        with open('accounts.beancount', 'r') as f:
-            return f.read()
+    def get_accounts(self)->str:
+        return self.accounts_collection.find().next()['content']

@@ -1,12 +1,13 @@
 # BEANBOT
 A telegram bot that uses ChatGPT to generate transactions.
 
-## Functionality
+## Usage
+* Upload an `<anyName>.beancount` file to save it as `accounts.beancount` to be used for predicting new transactions
 * `/help` to get the available commands.
-* `/cat` to print the transactions or `/cat <int>` to print last n transactions
-* `/download` and `/download archived` to download current and archived transactions as `transactions.beancount`. This can then be copied to your ledgre
-* `/archive` to archive all the transactions in your current ledgre
-* `/edit` to enter interactive edit mode that allows you to delete transactions individually. You can also use `/edit archived` similarly.
+* `/cat [n] [transactions|archived|accounts]` to print the (optionally last n) transactions from current ledger or archived or from accounts
+* `/download [transactions|archived|accounts]` to download current (default) or archived transactions or accounts.
+* `/archive` to archive all the transactions in your current ledger
+* `/edit [archived]` to enter interactive edit mode that allows you to delete transactions individually.
 
 ## Screenshots
 
@@ -48,3 +49,14 @@ cd beanbot
     docker run -d beanbot:latest
     ```
     It needs no port mapping or any new environment variables, since all the required environment variables were already added in `.env`
+
+## Development
+Improvements are welcome. 
+You can setup the environment with a separate conda env as below
+```bash
+conda create -n beanbot -y python==3.11 && \
+    conda activate beanbot && \
+    pip3 install -r requirements.txt
+```
+
+And run the bot server in debug mode after editing the `.env` as above, using the `Debug Beanbot` debug config already added.
