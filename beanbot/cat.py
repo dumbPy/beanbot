@@ -3,6 +3,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
 from beanbot.utils import handle_state_error
 from beanbot.storage import MongoDBWrapper
+from .utils import DataType
 
 class TransactionCat:
     def __init__(self, storage:MongoDBWrapper):
@@ -27,12 +28,10 @@ class TransactionCat:
             data = self.storage.get_accounts()
             data = "\n\n".join(data.split('\n\n')[-n:])
         elif cat_type == 'archived':
-            data = list(self.storage.collection.find({'archived': True}))[-n:]
-            data = "\n\n".join([d['content'] for d in data])
-            if not data:
-                data = "No archived transactions"
+            data = self.storage.read(DataType.ARCHIVED)[-n:]
+            data = '\n\n'.join(data)
         else:
-            data = self.storage.read()[-n:]
+            data = self.storage.read(DataType.TRANSACTIONS)[-n:]
             data = '\n\n'.join(data)
 
         await update.message.reply_text("```beancount\n{}\n```".format(data), parse_mode='markdownV2')
