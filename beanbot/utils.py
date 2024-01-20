@@ -36,6 +36,11 @@ def handle_state_error(func):
             return await func(*args, **kwargs)
         except Exception as e:
             update = args[1]  # Assuming the first argument is the `update` object since 0th would be self for a class method
-            await update.callback_query.edit_message_text(f"An error occurred: {str(e)}")
+            try:
+                # if the error occurs in a callback, edit the message
+                await update.callback_query.edit_message_text(f"An error occurred: {str(e)}")
+            except:
+                # if the error occurs during first message, reply to the message
+                await update.message.reply_text(f"An error occurred: {str(e)}")
             return ConversationHandler.END
     return wrapper
