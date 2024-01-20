@@ -5,11 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "Debug Beanbot",
             "type": "python",
             "request": "launch",
             "module": "beanbot",
-            "justMyCode": false
+            "env": {"LOG_LEVEL": "DEBUG"},
+            "justMyCode": true
         }
     ]
 }
