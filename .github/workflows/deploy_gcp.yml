@@ -1,6 +1,24 @@
 name: Deploy to GCP
 on:
   workflow_dispatch:
+    inputs:
+      LOG_LEVEL:
+        description: 'LOG LEVEL To Run with. Either of DEBUG, INFO, WARNING, ERROR, CRITICAL'
+        required: true
+        default: 'INFO'
+        type: choice
+        options:
+          - 'DEBUG'
+          - 'INFO'
+          - 'WARNING'
+          - 'ERROR'
+          - 'CRITICAL'
+      TEMPERATURE:
+        description: 'Temperature to use for gpt-3.5-turbo 0<=TEMPERATURE<=1'
+        required: true
+        default: 0.1
+        type: number
+    
 
 jobs:
   deploy:
@@ -20,12 +38,17 @@ jobs:
         run: |
           gcloud -q compute instances list | grep beanrunner && gcloud -q compute instances delete beanrunner --zone=us-central1-a  && echo 'Deleted Old Instance' || echo 'No Instance to Delete'
   
-      # - name: Deploy Fresh Instance
-      #   run: |
-      #     gcloud compute instances create-with-container beanrunner \
-      #       --zone=us-central1-a \
-      #       --container-image=docker.io/dumbpy/beanbot:latest \
-      #       --machine-type=e2-micro \
-      #       --container-env=...
+      - name: Deploy Fresh Instance
+        run: |
+          gcloud compute instances create-with-container beanrunner \
+            --zone=us-central1-a \
+            --container-image=docker.io/dumbpy/beanbot:latest \
+            --machine-type=e2-micro \
+            --container-env="LOG_LEVEL=${{ github.event.inputs.LOG_LEVEL }}" \
+            --container-env="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
+            --container-env="TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+            --container-env="TELEGRAM_USERNAME=${{ secrets.TELEGRAM_USERNAME }}" \
+            --container-env="MONGO_URI=${{ secrets.MONGO_URI }}" \
+            --container-env="MONGO_DATABASE=${{ secrets.MONGO_DATABASE }}" \
+            --container-env="TEMPERATURE=${{ vars.TEMPERATURE }}"
 
-    
