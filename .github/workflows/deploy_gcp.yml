@@ -1,3 +1,5 @@
+# This recipe was make possible thanks to https://medium.com/@enocom/deploy-a-container-on-gcp-the-easy-way-4e5fd64aca76 and a few other resources
+
 name: Deploy to GCP
 on:
   workflow_dispatch:
@@ -18,7 +20,7 @@ on:
         required: true
         default: 0.1
         type: number
-    
+
 
 jobs:
   deploy:
