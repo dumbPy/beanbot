@@ -11,7 +11,12 @@ from .generate import TransactionGenerator
 from .utils import handle_error
 import dotenv
 
+logger = logging.getLogger('beanbot')
+logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO').upper())
+
+logger.debug(f"System environment variables: {os.environ}")
 dotenv.load_dotenv()
+logger.debug(f"Final environment variables: {os.environ}")
 
 storage = MongoDBWrapper()
 

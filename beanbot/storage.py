@@ -1,14 +1,22 @@
 from pymongo import MongoClient
 from pathlib import Path
 import os
+import logging
+
+logger = logging.getLogger('beanbot.storage')
+
 
 class MongoDBWrapper:
     def __init__(self):
+        logger.debug(f"Connecting to MongoDB at {os.environ['MONGO_URI']}")
         self.client = MongoClient(os.environ['MONGO_URI'])
+        logger.debug(f"Using mongo database {os.environ['MONGO_DATABASE']}")
         self.db = self.client[os.environ['MONGO_DATABASE']]
         try:
             self.db.create_collection('transactions')
+            logger.debug("Created collection transactions")
         except:
+            logger.info("Collection transactions already exists. Skipping...")
             pass
         self.collection = self.db['transactions']
     
