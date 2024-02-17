@@ -59,7 +59,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def download_transactions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Get the transactions.beancount txt file."""
     args = ' '.join(context.args)
-    groups = re.match(r'^(?P<type>transactions|archived|accounts)?$', args).groupdict()
+    try:
+        groups = re.match(r'^(?P<type>transactions|archived|accounts)?$', args).groupdict()
+    except:
+        raise ValueError("Invalid arguments. Use `/download [transactions|archived|accounts]`")
     data_type = DataType(groups.get('type') if groups.get('type', None) is not None else 'transactions')
     file = storage.as_file(data_type)
     await update.message.reply_document(file.open('rb'))

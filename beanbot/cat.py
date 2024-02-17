@@ -18,8 +18,7 @@ class TransactionCat:
             match = re.match(r'^(?P<n>\d+)?\s?(?P<type>transactions|archived|accounts)?$', args)
             groups = match.groupdict()
         except:
-            await update.message.reply_text("Invalid arguments. Use `/cat [n] [transactions|archived|accounts]`\n\nwhere n is last n items and type is optional and defaults to transactions")
-            return
+            raise ValueError("Invalid arguments. Use `/cat [n] [transactions|archived|accounts]`\n\nwhere n is last n items and type is optional and defaults to transactions")
 
 
         cat_type = 'transactions' if groups.get('type', None) is None else groups['type']

@@ -1,3 +1,6 @@
+import os
+import datetime
+import pytz
 import logging
 import traceback
 from telegram.ext import ConversationHandler
@@ -54,3 +57,7 @@ def handle_state_error(func):
                 logger.error(traceback.format_exc())
             return ConversationHandler.END
     return wrapper
+
+def get_date_in_locale() -> str:
+    locale = pytz.timezone(os.environ.get('TIMEZONE', 'Asia/Kolkata'))
+    return datetime.datetime.now(locale).strftime('%Y-%m-%d')

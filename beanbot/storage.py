@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import logging
 from enum import Enum
-from .utils import DataType
+from .utils import DataType, get_date_in_locale
 
 logger = logging.getLogger('beanbot.storage')
 
@@ -55,11 +55,11 @@ class MongoDBWrapper:
         data = "\n\n".join(self.read(type))
         match type:
             case DataType.TRANSACTIONS:
-                path = Path('/tmp/transactions.beancount')
+                path = Path(f'/tmp/{get_date_in_locale()}.transactions.txt')
             case DataType.ARCHIVED:
-                path = Path('/tmp/archived.beancount')
+                path = Path(f'/tmp/{get_date_in_locale}.archived.txt')
             case DataType.ACCOUNTS:
-                path = Path('/tmp/accounts.beancount')
+                path = Path(f'/tmp/{get_date_in_locale}.accounts.txt')
         path.write_text(data)
         return path
     

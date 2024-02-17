@@ -65,9 +65,13 @@ class AccountsUploader:
         return ConversationHandler(
             entry_points=[
                 MessageHandler(
-                    filters.Document.FileExtension("beancount")
-                    | filters.Document.FileExtension("bean")
-                    | filters.Document.FileExtension("beans"),
+                    filters.Document.TEXT
+                    & (
+                        filters.Document.FileExtension("txt")
+                        | filters.Document.FileExtension("beancount")
+                        | filters.Document.FileExtension("bean")
+                        | filters.Document.FileExtension("beans")
+                    ),
                     self.handle_uploaded_file,
                 )
             ],

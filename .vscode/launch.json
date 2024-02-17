@@ -5,8 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Run File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Debug Beanbot",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "beanbot",
             "env": {"LOG_LEVEL": "DEBUG"},

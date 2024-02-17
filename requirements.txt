@@ -1,6 +1,8 @@
 python-telegram-bot==20.7
-openai==1.8.0
 python-dotenv
 python-dateutil
 pymongo==4.6.1
 pytz
+langchain==0.1.7
+langchain_openai==0.0.6
+langchain_google_genai==0.0.9
